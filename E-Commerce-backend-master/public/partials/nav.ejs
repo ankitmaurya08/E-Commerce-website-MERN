@@ -1,0 +1,102 @@
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <img src="../public/images/groom2.png" alt="" width="78" height="46">
+        </a>
+
+        <div class="d-flex">
+
+            <a class="btn btn-dark ms-3" id="loginButton" data-bs-toggle="modal" data-bs-target="#exampleModal" >
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
+            <a href="/cart/" id="cartitem" class="btn btn-dark ms-3" >
+                <i class="fas fa-shopping-cart"></i>
+                [<span id="cart_no">0</span>]
+            </a>
+
+
+            <div class="btn-group bg-dark" id="profileitem">
+                <button type="button" class="btn btn-info dropdown-toggle bg-dark" style="color: white;" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    Hi, <span id="user"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fa-solid fa-list"></i> Orders</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-shopping-cart"></i> Cart</a></li>
+
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="btn btn-dark ms-3" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <%- include('login') %>
+
+    </div>
+</nav>
+
+
+<script>
+    async function checkLoginStatus() {
+        try {
+            const response = await fetch('/checkLoginStatus',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+            },
+            });
+            const data = await response.json();
+
+            if (data.isLoggedIn) {
+                // window.location.href = data.redirect;
+                document.getElementById('loginButton').style.display = 'none';
+                document.getElementById('user').innerHTML = data.user.username;
+
+                var myLink = document.getElementById('cartitem');
+                myLink.setAttribute('href', '/cart/'+`${data.user.userId}`);
+
+                console.log(data.user);
+            } else {
+                document.getElementById('loginButton').style.display = 'block';
+                document.getElementById('profileitem').style.display = 'none';
+                document.getElementById('cartitem').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error checking login status:', error);
+        }
+    }
+    window.onload = checkLoginStatus;
+
+
+    function logout() {
+
+        fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.message);
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+</script>
